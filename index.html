@@ -294,6 +294,19 @@
 
         // Steward
         document.getElementById('detSteward').textContent = item.steward ? 'Data Steward: ' + item.steward : '';
+        // Status badge color logic
+const statusColors = {
+  "Published":    "bg-green-100 text-green-800",
+  "Under Review": "bg-yellow-100 text-yellow-800",
+  "Draft":        "bg-gray-100 text-gray-600"
+};
+const statusClass = statusColors[item.status] || "bg-gray-100 text-gray-600";
+
+document.getElementById('detMetadata').innerHTML = `
+  <span class="${statusClass} px-3 py-1 rounded-full text-xs font-bold">${item.status || 'Draft'}</span>
+  <span class="text-gray-400 text-xs">Version: ${item.version || '1.0'}</span>
+  <span class="text-gray-400 text-xs">Last Updated: ${item.lastUpdated || 'N/A'}</span>
+`;
 
         // Tags
         document.getElementById('detTags').innerHTML = item.tags.map(t =>
