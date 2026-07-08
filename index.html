@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Hub - UBalt Office of Institutional Effectiveness</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-tab { 
+            border-bottom: 4px solid #1e40af; 
+            color: #1e40af; 
+            font-weight: 600; 
+        }
+        .definition-row:hover {
+            background-color: #f9fafb;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+    <!-- Header Section -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Knowledge Hub</h1>
+                    <p class="text-sm text-gray-600 mt-1">Office of Institutional Effectiveness | University of Baltimore</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500">Data Dictionary & Definitions</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- Search and Filter Bar (MHEC Style) -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search definitions, synonyms, or logic..." 
+                    class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-gray-700">
+                <select 
+                    id="areaFilter" 
+                    class="p-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-blue-600 outline-none">
+                    <option value="All">All Functional Areas</option>
+                    <option value="Instruction">Instruction</option>
+                    <option value="Enrollment">Enrollment</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Student Success">Student Success</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Functional Area Tabs (MHEC Structure) -->
+        <div class="flex border-b border-gray-300 mb-6 overflow-x-auto">
+            <button onclick="filterByTab('All')" class="px-6 py-3 text-gray-600 hover:text-blue-700 transition active-tab" id="tab-All">
+                All Definitions
+            </button>
+            <button onclick="filterByTab('Instruction')" class="px-6 py-3 text-gray-600 hover:text-blue-700 transition" id="tab-Instruction">
+                Instruction
+            </button>
+            <button onclick="filterByTab('Enrollment')" class="px-6 py-3 text-gray-600 hover:text-blue-700 transition" id="tab-Enrollment">
+                Enrollment
+            </button>
+            <button onclick="filterByTab('Finance')" class="px-6 py-3 text-gray-600 hover:text-blue-700 transition" id="tab-Finance">
+                Finance
+            </button>
+            <button onclick="filterByTab('Student Success')" class="px-6 py-3 text-gray-600 hover:text-blue-700 transition" id="tab-Student Success">
+                Student Success
+            </button>
+        </div>
+
+        <!-- Results Count -->
+        <div class="mb-4">
+            <p class="text-sm text-gray-600">Showing <span id="resultCount" class="font-semibold text-gray-900">0</span> definitions</p>
+        </div>
+
+        <!-- Data Table (MHEC Structure) -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Term Name
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Functional Definition
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Functional Area
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            Data Steward
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <p class="text-gray-500 text-lg">No definitions found matching your search.</p>
+            <p class="text-gray-400 text-sm mt-2">Try adjusting your search terms or filters.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-6 py-6 text-center text-sm text-gray-500">
+            <p>© 2026 University of Baltimore | Office of Institutional Effectiveness</p>
+            <p class="mt-1">Knowledge Hub v3.0 | Last Updated: July 2026</p>
+        </div>
+    </footer>
+
+    <script>
+        // ========================================
+        // 1. YOUR DATA LIBRARY (Add definitions here!)
+        // ========================================
+        const knowledgeData = [
+            { 
+                name: "Average Class Size", 
+                definition: "The total number of students in organized class sections divided by the total number of such sections. Excludes independent study, thesis, and dissertation courses.", 
+                area: "Instruction",
+                steward: "Registrar"
+            },
+            { 
+                name: "FTE (Full-Time Equivalency)", 
+                definition: "A measurement equal to one student enrolled full-time for one academic year. Calculated as total credit hours divided by 30 for undergraduate students.", 
+                area: "Enrollment",
+                steward: "Institutional Research"
+            },
+            { 
+                name: "Student-to-Faculty Ratio", 
+                definition: "The ratio of full-time equivalent students to full-time equivalent instructional faculty. Calculated using fall enrollment data and excludes graduate assistants.", 
+                area: "Instruction",
+                steward: "Provost Office"
+            },
+            { 
+                name: "Retention Rate", 
+                definition: "The percentage of first-time, full-time degree-seeking students who return to the institution for their second year.", 
+                area: "Student Success",
+                steward: "Student Affairs"
+            },
+            { 
+                name: "Tuition Revenue", 
+                definition: "Total revenue generated from tuition and mandatory fees, excluding room and board charges.", 
+                area: "Finance",
+                steward: "Controller's Office"
+            }
+        ];
+
+        // ========================================
+        // 2. RENDER FUNCTION (Builds the table)
+        // ========================================
+        function renderTable(data) {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const resultCount = document.getElementById('resultCount');
+
+            if (data.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                resultCount.textContent = '0';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            resultCount.textContent = data.length;
+
+            tableBody.innerHTML = data.map(item => `
+                <tr class="definition-row">
+                    <td class="px-6 py-4">
+                        <h4 class="font-semibold text-blue-700 text-base">${item.name}</h4>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-700 leading-relaxed">
+                        ${item.definition}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                            ${item.area}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        ${item.steward}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ========================================
+        // 3. SEARCH & FILTER LOGIC
+        // ========================================
+        function updateView() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const areaTerm = document.getElementById('areaFilter').value;
+
+            const filtered = knowledgeData.filter(item => {
+                const matchesSearch = 
+                    item.name.toLowerCase().includes(searchTerm) || 
+                    item.definition.toLowerCase().includes(searchTerm) ||
+                    item.steward.toLowerCase().includes(searchTerm);
+                const matchesArea = areaTerm === "All" || item.area === areaTerm;
+                return matchesSearch && matchesArea;
+            });
+
+            renderTable(filtered);
+        }
+
+        // ========================================
+        // 4. TAB NAVIGATION (MHEC Style)
+        // ========================================
+        function filterByTab(area) {
+            document.getElementById('areaFilter').value = area;
+            
+            // Update active tab styling
+            document.querySelectorAll('button[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+            document.getElementById('tab-' + area).classList.add('active-tab');
+            
+            updateView();
+        }
+
+        // ========================================
+        // 5. EVENT LISTENERS
+        // ========================================
+        document.getElementById('searchInput').addEventListener('input', updateView);
+        document.getElementById('areaFilter').addEventListener('change', updateView);
+
+        // ========================================
+        // 6. INITIAL PAGE LOAD
+        // ========================================
+        renderTable(knowledgeData);
+    </script>
+</body>
+</html>
