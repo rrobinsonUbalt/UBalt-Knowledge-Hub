@@ -5,127 +5,417 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UBalt OIE Knowledge Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- YOUR EXTERNAL DATABASE — this is the only file you edit -->
+    <script src="data.js"></script>
+    <style>
+        .tag-btn { transition: all 0.15s ease; }
+        .tag-btn:hover { transform: translateY(-1px); }
+        .term-row { transition: background 0.15s ease; }
+        .active-area { background-color: #1e40af; color: white; }
+        .sticky-nav { position: sticky; top: 0; z-index: 50; }
+        pre { font-family: 'Courier New', monospace; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans text-gray-800">
 
-    <!-- 1. THE LIST VIEW (Visible by default) -->
-    <div id="listView">
-        <header class="bg-white border-b p-6 mb-8">
-            <h1 class="text-3xl font-bold text-blue-900">Knowledge Hub</h1>
-            <p class="text-gray-600">University of Baltimore | Office of Institutional Effectiveness</p>
-        </header>
+<!-- ============================================================ -->
+<!--  LIST VIEW                                                    -->
+<!-- ============================================================ -->
+<div id="listView">
 
-        <main class="max-w-7xl mx-auto px-6">
-            <!-- Search & Tags -->
-            <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                <input type="text" id="searchInput" oninput="updateSearch()" placeholder="Search definitions or tags..." class="w-full p-3 border rounded-lg mb-4">
-                <div class="flex gap-2 flex-wrap">
-                    <span class="text-xs font-bold text-gray-400 uppercase">Quick Tags:</span>
-                    <button onclick="filterByTag('federal definitions')" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-blue-100">federal definitions</button>
-                    <button onclick="filterByTag('internal definitions')" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-blue-100">internal definitions</button>
-                    <button onclick="filterByTag('dashboard methodologies')" class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-blue-100">dashboard methodologies</button>
-                </div>
-            </div>
+    <!-- Header -->
+    <header class="bg-blue-900 text-white px-8 py-8 shadow-lg">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-black tracking-tight">Knowledge Hub</h1>
+            <p class="text-blue-200 mt-1 text-sm">University of Baltimore &nbsp;|&nbsp; Office of Institutional Effectiveness</p>
+        </div>
+    </header>
 
-            <!-- Table -->
-            <div class="bg-white shadow rounded-lg overflow-hidden">
-                <table class="min-w-full">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Term</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Functional Area</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Tags</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </main>
+    <!-- Functional Area Tab Bar -->
+    <div class="bg-white border-b shadow-sm sticky-nav">
+        <div class="max-w-7xl mx-auto px-8 flex gap-1 overflow-x-auto py-2" id="areaTabs">
+            <button onclick="setArea('All')" id="area-All"
+                class="area-tab active-area px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition">
+                All Areas
+            </button>
+            <button onclick="setArea('Enrollment')" id="area-Enrollment"
+                class="area-tab bg-gray-100 text-gray-700 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition hover:bg-blue-100">
+                Enrollment
+            </button>
+            <button onclick="setArea('Instruction')" id="area-Instruction"
+                class="area-tab bg-gray-100 text-gray-700 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition hover:bg-blue-100">
+                Instruction
+            </button>
+            <button onclick="setArea('Finance')" id="area-Finance"
+                class="area-tab bg-gray-100 text-gray-700 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition hover:bg-blue-100">
+                Finance
+            </button>
+            <button onclick="setArea('Student Success')" id="area-Student Success"
+                class="area-tab bg-gray-100 text-gray-700 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition hover:bg-blue-100">
+                Student Success
+            </button>
+        </div>
     </div>
 
-    <!-- 2. THE DETAIL VIEW (Hidden by default) -->
-    <div id="detailView" class="hidden min-h-screen bg-white">
-        <nav class="p-6 border-b bg-gray-50">
-            <button onclick="showList()" class="text-blue-700 font-bold hover:underline">← Back to Full List</button>
-        </nav>
-        <main class="max-w-4xl mx-auto p-8">
-            <h2 id="detName" class="text-4xl font-black text-blue-900 mb-2"></h2>
-            <div id="detTags" class="flex gap-2 mb-8"></div>
+    <main class="max-w-7xl mx-auto px-8 py-8">
 
-            <div class="grid grid-cols-1 gap-12">
-                <section>
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest border-b pb-2 mb-4">Functional Definition</h3>
-                    <p id="detFunc" class="text-lg text-gray-800 leading-relaxed"></p>
-                </section>
+        <!-- Search + Tag Filter Row -->
+        <div class="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+            <input type="text" id="searchInput" oninput="filterData()"
+                placeholder="Search terms, definitions, tags, or logic codes..."
+                class="w-full p-4 border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-blue-600 outline-none mb-4">
 
-                <section class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                    <h3 class="text-sm font-bold text-blue-900 uppercase tracking-widest mb-4">Codes & Logic</h3>
-                    <pre id="detCodes" class="font-mono text-sm text-blue-800 whitespace-pre-wrap"></pre>
-                </section>
-
-                <section>
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest border-b pb-2 mb-4">Detailed Comments</h3>
-                    <div id="detComments" class="text-gray-700 space-y-4 leading-relaxed"></div>
-                </section>
+            <!-- Quick Tag Filters -->
+            <div class="flex flex-wrap gap-2 items-center">
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mr-1">Filter by Tag:</span>
+                <button onclick="filterByTag('federal definitions')"
+                    class="tag-btn text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium hover:bg-blue-200">
+                    federal definitions
+                </button>
+                <button onclick="filterByTag('internal definitions')"
+                    class="tag-btn text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium hover:bg-green-200">
+                    internal definitions
+                </button>
+                <button onclick="filterByTag('dashboard methodologies')"
+                    class="tag-btn text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-medium hover:bg-purple-200">
+                    dashboard methodologies
+                </button>
+                <button onclick="filterByTag('IPEDS')"
+                    class="tag-btn text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium hover:bg-yellow-200">
+                    IPEDS
+                </button>
+                <button onclick="filterByTag('MHEC')"
+                    class="tag-btn text-xs bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium hover:bg-red-200">
+                    MHEC
+                </button>
+                <button onclick="filterByTag('CDS')"
+                    class="tag-btn text-xs bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-medium hover:bg-orange-200">
+                    CDS
+                </button>
+                <button onclick="clearFilters()"
+                    class="tag-btn text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-medium hover:bg-gray-300 ml-2">
+                    ✕ Clear Filters
+                </button>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <script>
-        // YOUR MINI-DATABASE
-        const knowledgeData = [
-            {
-                id: 1,
-                name: "First Time Flag",
-                area: "Enrollment (EIS)",
-                tags: ["federal definitions", "MHEC"],
-                definition: "A flag that indicates the student is enrolled for the first time at any institution.",
-                codes: "0 = High School\n1 = First-time Undergraduate\n2 = Continuing\n3 = First-time Graduate",
-                comments: "A student who has no prior postsecondary experience... [This can be as long as you want!]"
-            }
-        ];
+        <!-- Results Count -->
+        <div class="flex justify-between items-center mb-4">
+            <p class="text-sm text-gray-500">
+                Showing <span id="resultCount" class="font-bold text-gray-800">0</span> definitions
+                <span id="activeFilterLabel" class="text-blue-600 font-medium"></span>
+            </p>
+        </div>
 
-        function renderTable(data) {
-            const html = data.map(item => `
-                <tr onclick="showDetail(${item.id})" class="border-b hover:bg-blue-50 cursor-pointer">
-                    <td class="px-6 py-4 font-bold text-blue-700">${item.name}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">${item.area}</td>
-                    <td class="px-6 py-4 text-xs text-gray-400">${item.tags.join(', ')}</td>
-                </tr>
-            `).join('');
-            document.getElementById('tableBody').innerHTML = html;
+        <!-- Definitions Table -->
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest w-1/4">Term</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Functional Definition</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest w-1/6">Area</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest w-1/4">Tags</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-16">
+                <p class="text-gray-400 text-xl font-semibold">No definitions found</p>
+                <p class="text-gray-300 text-sm mt-2">Try adjusting your search or clearing filters</p>
+                <button onclick="clearFilters()" class="mt-4 text-blue-600 text-sm font-medium hover:underline">Clear all filters</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t bg-white mt-12 py-6 text-center text-xs text-gray-400">
+        UBalt Office of Institutional Effectiveness &nbsp;|&nbsp; Knowledge Hub v6.0 &nbsp;|&nbsp; July 2026
+    </footer>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  DETAIL VIEW (Individual Term Page)                          -->
+<!-- ============================================================ -->
+<div id="detailView" class="hidden min-h-screen bg-white">
+
+    <!-- Sticky Back Nav -->
+    <nav class="sticky-nav bg-white border-b shadow-sm px-8 py-4 flex items-center gap-4">
+        <button onclick="showList()"
+            class="flex items-center gap-2 text-blue-700 font-bold hover:text-blue-900 transition">
+            ← Back to Knowledge Hub
+        </button>
+        <span class="text-gray-300">|</span>
+        <span id="detailBreadcrumb" class="text-sm text-gray-500"></span>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-8 py-12">
+
+        <!-- Term Header -->
+        <div class="mb-10">
+            <p id="detArea" class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2"></p>
+            <h2 id="detName" class="text-5xl font-black text-blue-900 mb-3"></h2>
+            <p id="detSynonyms" class="text-sm text-gray-400 mb-4"></p>
+            <div id="detTags" class="flex flex-wrap gap-2 mb-4"></div>
+            <p id="detSteward" class="text-xs text-gray-400"></p>
+        </div>
+
+        <hr class="mb-10">
+
+        <!-- Functional Definition -->
+        <section class="mb-10">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Functional Definition</h3>
+            <p id="detDefinition" class="text-xl text-gray-800 leading-relaxed"></p>
+        </section>
+
+        <!-- Format & Codes Block (MHEC Style) -->
+        <section id="detCodesSection" class="mb-10 bg-gray-50 border rounded-2xl p-8">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Format &amp; Codes</h3>
+            <pre id="detCodes" class="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed"></pre>
+        </section>
+
+        <!-- Long Description / Comments -->
+        <section class="mb-10">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Comments &amp; Detailed Explanation</h3>
+            <div id="detComments" class="text-gray-700 leading-relaxed space-y-4 text-base"></div>
+        </section>
+
+        <!-- Photo / Image -->
+        <section id="detImageSection" class="mb-10 hidden">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Logic Diagram / Reference Image</h3>
+            <img id="detImage" src="" alt="Logic diagram" class="rounded-xl border shadow-md max-w-full">
+        </section>
+
+        <!-- Attachments -->
+        <section id="detFilesSection" class="mb-10 hidden">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Attachments &amp; Resources</h3>
+            <div id="detFiles" class="flex flex-col gap-3"></div>
+        </section>
+
+        <!-- Related Terms -->
+        <section id="detRelatedSection" class="mb-10 hidden">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Related Terms</h3>
+            <div id="detRelated" class="flex flex-wrap gap-2"></div>
+        </section>
+
+        <!-- Back Button Bottom -->
+        <div class="pt-8 border-t">
+            <button onclick="showList()" class="text-blue-700 font-bold hover:underline">← Back to Knowledge Hub</button>
+        </div>
+    </main>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  JAVASCRIPT ENGINE                                           -->
+<!-- ============================================================ -->
+<script>
+    let currentArea = 'All';
+    let currentTag = '';
+
+    // TAG COLOR MAP
+    const tagColors = {
+        'federal definitions': 'bg-blue-100 text-blue-800',
+        'internal definitions': 'bg-green-100 text-green-800',
+        'dashboard methodologies': 'bg-purple-100 text-purple-800',
+        'IPEDS': 'bg-yellow-100 text-yellow-800',
+        'MHEC': 'bg-red-100 text-red-800',
+        'CDS': 'bg-orange-100 text-orange-800',
+        'EIS': 'bg-pink-100 text-pink-800',
+        'Board of Regents': 'bg-indigo-100 text-indigo-800',
+        'factbook': 'bg-teal-100 text-teal-800',
+        'accreditation': 'bg-cyan-100 text-cyan-800',
+    };
+
+    function getTagClass(tag) {
+        return tagColors[tag] || 'bg-gray-100 text-gray-700';
+    }
+
+    // RENDER TABLE
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        const empty = document.getElementById('emptyState');
+        const count = document.getElementById('resultCount');
+
+        if (data.length === 0) {
+            tbody.innerHTML = '';
+            empty.classList.remove('hidden');
+            count.textContent = '0';
+            return;
         }
 
-        function showDetail(id) {
-            const item = knowledgeData.find(d => d.id === id);
-            document.getElementById('detName').innerText = item.name;
-            document.getElementById('detFunc').innerText = item.definition;
-            document.getElementById('detCodes').innerText = item.codes;
-            document.getElementById('detComments').innerText = item.comments;
-            document.getElementById('detTags').innerHTML = item.tags.map(t => `<span class="bg-gray-100 px-2 py-1 rounded text-xs">${t}</span>`).join('');
-            
-            document.getElementById('listView').classList.add('hidden');
-            document.getElementById('detailView').classList.remove('hidden');
-            window.scrollTo(0,0);
+        empty.classList.add('hidden');
+        count.textContent = data.length;
+
+        tbody.innerHTML = data.map(item => `
+            <tr onclick="showDetail('${item.id}')"
+                class="term-row border-b hover:bg-blue-50 cursor-pointer">
+                <td class="px-6 py-5">
+                    <p class="font-bold text-blue-700 text-base">${item.name}</p>
+                    ${item.synonyms ? `<p class="text-xs text-gray-400 mt-1">Synonyms: ${item.synonyms}</p>` : ''}
+                </td>
+                <td class="px-6 py-5 text-sm text-gray-600 leading-relaxed">
+                    ${item.definition.substring(0, 140)}${item.definition.length > 140 ? '...' : ''}
+                </td>
+                <td class="px-6 py-5">
+                    <span class="text-xs bg-blue-900 text-white px-3 py-1 rounded-full font-medium">${item.area}</span>
+                </td>
+                <td class="px-6 py-5">
+                    <div class="flex flex-wrap gap-1">
+                        ${item.tags.map(tag =>
+                            `<span onclick="event.stopPropagation(); filterByTag('${tag}')"
+                                class="tag-btn text-[10px] ${getTagClass(tag)} px-2 py-1 rounded-full font-medium cursor-pointer">
+                                ${tag}
+                            </span>`
+                        ).join('')}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // SHOW DETAIL PAGE
+    function showDetail(id) {
+        const item = knowledgeData.find(d => d.id === id);
+        if (!item) return;
+
+        document.getElementById('detName').textContent = item.name;
+        document.getElementById('detArea').textContent = item.area;
+        document.getElementById('detDefinition').textContent = item.definition;
+        document.getElementById('detBreadcrumb') && (document.getElementById('detailBreadcrumb').textContent = item.area + ' › ' + item.name);
+        document.getElementById('detailBreadcrumb').textContent = item.area + ' › ' + item.name;
+
+        // Synonyms
+        document.getElementById('detSynonyms').textContent = item.synonyms ? 'Synonyms: ' + item.synonyms : '';
+
+        // Steward
+        document.getElementById('detSteward').textContent = item.steward ? 'Data Steward: ' + item.steward : '';
+
+        // Tags
+        document.getElementById('detTags').innerHTML = item.tags.map(t =>
+            `<span class="text-xs ${getTagClass(t)} px-3 py-1 rounded-full font-medium">${t}</span>`
+        ).join('');
+
+        // Codes
+        if (item.logicCodes) {
+            document.getElementById('detCodes').textContent = item.logicCodes;
+            document.getElementById('detCodesSection').classList.remove('hidden');
+        } else {
+            document.getElementById('detCodesSection').classList.add('hidden');
         }
 
-        function showList() {
-            document.getElementById('listView').classList.remove('hidden');
-            document.getElementById('detailView').classList.add('hidden');
+        // Comments (supports HTML paragraphs)
+        document.getElementById('detComments').innerHTML = item.comments
+            ? item.comments.split('\n\n').map(p => `<p>${p}</p>`).join('')
+            : '<p class="text-gray-400 italic">No additional comments provided.</p>';
+
+        // Image
+        if (item.image) {
+            document.getElementById('detImage').src = item.image;
+            document.getElementById('detImageSection').classList.remove('hidden');
+        } else {
+            document.getElementById('detImageSection').classList.add('hidden');
         }
 
-        function updateSearch() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = knowledgeData.filter(d => d.name.toLowerCase().includes(term) || d.tags.some(t => t.includes(term)));
-            renderTable(filtered);
+        // Files
+        if (item.files && item.files.length > 0) {
+            document.getElementById('detFiles').innerHTML = item.files.map(f =>
+                `<a href="${f.url}" target="_blank"
+                    class="flex items-center gap-3 p-4 border rounded-xl hover:bg-blue-50 transition group">
+                    <span class="text-2xl">📄</span>
+                    <span class="text-blue-700 font-medium group-hover:underline">${f.title}</span>
+                </a>`
+            ).join('');
+            document.getElementById('detFilesSection').classList.remove('hidden');
+        } else {
+            document.getElementById('detFilesSection').classList.add('hidden');
         }
 
-        function filterByTag(tag) {
-            document.getElementById('searchInput').value = tag;
-            updateSearch();
+        // Related Terms
+        if (item.relatedTerms && item.relatedTerms.length > 0) {
+            document.getElementById('detRelated').innerHTML = item.relatedTerms.map(termId => {
+                const related = knowledgeData.find(d => d.id === termId);
+                return related
+                    ? `<button onclick="showDetail('${related.id}')"
+                        class="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-full font-medium hover:bg-blue-100 transition">
+                        ${related.name}
+                      </button>`
+                    : '';
+            }).join('');
+            document.getElementById('detRelatedSection').classList.remove('hidden');
+        } else {
+            document.getElementById('detRelatedSection').classList.add('hidden');
         }
 
+        document.getElementById('listView').classList.add('hidden');
+        document.getElementById('detailView').classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    // SHOW LIST
+    function showList() {
+        document.getElementById('listView').classList.remove('hidden');
+        document.getElementById('detailView').classList.add('hidden');
+    }
+
+    // FILTER BY AREA TAB
+    function setArea(area) {
+        currentArea = area;
+        document.querySelectorAll('.area-tab').forEach(btn => {
+            btn.classList.remove('active-area');
+            btn.classList.add('bg-gray-100', 'text-gray-700');
+        });
+        const activeBtn = document.getElementById('area-' + area);
+        if (activeBtn) {
+            activeBtn.classList.add('active-area');
+            activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
+        }
+        filterData();
+    }
+
+    // FILTER BY TAG
+    function filterByTag(tag) {
+        currentTag = tag;
+        document.getElementById('searchInput').value = tag;
+        document.getElementById('activeFilterLabel').textContent = '— filtered by tag: "' + tag + '"';
+        filterData();
+    }
+
+    // CLEAR FILTERS
+    function clearFilters() {
+        currentTag = '';
+        currentArea = 'All';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('activeFilterLabel').textContent = '';
+        setArea('All');
         renderTable(knowledgeData);
-    </script>
+    }
+
+    // MAIN FILTER FUNCTION
+    function filterData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        document.getElementById('activeFilterLabel').textContent = query ? '— searching: "' + query + '"' : '';
+
+        const filtered = knowledgeData.filter(item => {
+            const matchesArea = currentArea === 'All' || item.area === currentArea;
+            const matchesSearch =
+                item.name.toLowerCase().includes(query) ||
+                item.definition.toLowerCase().includes(query) ||
+                (item.comments && item.comments.toLowerCase().includes(query)) ||
+                (item.logicCodes && item.logicCodes.toLowerCase().includes(query)) ||
+                (item.synonyms && item.synonyms.toLowerCase().includes(query)) ||
+                item.tags.some(t => t.toLowerCase().includes(query));
+            return matchesArea && matchesSearch;
+        });
+
+        renderTable(filtered);
+    }
+
+    // INITIAL LOAD
+    renderTable(knowledgeData);
+</script>
 </body>
 </html>
