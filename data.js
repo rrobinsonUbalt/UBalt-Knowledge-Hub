@@ -1,7 +1,7 @@
 // ============================================================
 //  data.js — UBalt OIE Knowledge Hub Database
-//  HOW TO ADD A NEW TERM: Copy any entry, paste before the
-//  closing ]; and fill in your details. Save = site updates!
+//  NEW FIELDS ADDED: status, version, lastUpdated
+//  Status options: "Draft" | "Under Review" | "Published"
 // ============================================================
 
 const knowledgeData = [
@@ -9,6 +9,9 @@ const knowledgeData = [
   {
     id: "headcount",
     name: "Headcount Enrollment",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Enrollment",
     synonyms: "HC, Total Enrollment, Student Count",
     steward: "Office of Institutional Effectiveness",
@@ -37,6 +40,9 @@ Note: Headcount differs from FTE. A student taking 6 credits counts as 1 in head
   {
     id: "fte",
     name: "Full-Time Equivalent (FTE)",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Enrollment",
     synonyms: "FTE Enrollment, Student FTE",
     steward: "Office of Institutional Effectiveness",
@@ -60,6 +66,9 @@ Maryland's state funding formula uses FTE as the primary enrollment driver. A 1%
   {
     id: "census-date",
     name: "Census Date",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Enrollment",
     synonyms: "Official Enrollment Date, Snapshot Date",
     steward: "Registrar / Office of Institutional Effectiveness",
@@ -78,6 +87,9 @@ Maryland's state funding formula uses FTE as the primary enrollment driver. A 1%
   {
     id: "schs",
     name: "Student Credit Hours (SCH)",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Instruction",
     synonyms: "Credit Hours Generated, SCH",
     steward: "Office of Institutional Effectiveness",
@@ -99,6 +111,9 @@ At UBalt, SCH is tracked by college, department, course level, and delivery moda
   {
     id: "retention-rate",
     name: "Retention Rate",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Student Success",
     synonyms: "First-Year Retention, Freshman Retention",
     steward: "Office of Institutional Effectiveness",
@@ -123,6 +138,9 @@ IPEDS only measures full-time, first-time students. UBalt also tracks part-time 
   {
     id: "graduation-rate",
     name: "Graduation Rate",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Student Success",
     synonyms: "Completion Rate, 6-Year Graduation Rate",
     steward: "Office of Institutional Effectiveness",
@@ -145,6 +163,9 @@ UBalt's working adult population can affect rates compared to traditional reside
   {
     id: "net-tuition-revenue",
     name: "Net Tuition Revenue",
+    status: "Published",
+    version: "1.0",
+    lastUpdated: "July 2026",
     area: "Finance",
     synonyms: "Net Tuition, Tuition Revenue Net of Aid",
     steward: "Finance / Budget Office",
@@ -166,12 +187,17 @@ The tuition discount rate (institutional aid / gross tuition) is a key financial
     relatedTerms: []
   }
 
-  // ADD NEW TERMS BELOW — copy the template, fill it in, save!
+  // ──────────────────────────────────────────────────────────
+  //  ADD NEW TERMS BELOW — copy this template, fill it in!
+  // ──────────────────────────────────────────────────────────
   /*
   ,{
-    id: "your-unique-id",
+    id: "your-unique-id",           // lowercase, hyphens only
     name: "Your Term Name",
-    area: "Enrollment",
+    status: "Draft",                // Draft | Under Review | Published
+    version: "1.0",
+    lastUpdated: "July 2026",
+    area: "Enrollment",             // Enrollment | Instruction | Finance | Student Success
     synonyms: "Alt name, Another name",
     steward: "Office Name",
     tags: ["IPEDS", "federal definitions"],
@@ -179,8 +205,8 @@ The tuition discount rate (institutional aid / gross tuition) is a key financial
     logicCodes: `Your logic codes here.`,
     comments: `Longer explanation here.
 
-Double line breaks = new paragraph.`,
-    image: "assets/images/your-image.png",
+Double line breaks create new paragraphs.`,
+    image: "assets/images/your-image.png",  // or null
     files: [
       { title: "Document Title", url: "assets/docs/your-file.pdf" }
     ],
